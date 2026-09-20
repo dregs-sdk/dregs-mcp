@@ -1,0 +1,27 @@
+name: Problem with this repository
+description: A setup snippet, the Claude Code plugin, or directory metadata in this repo is wrong or out of date.
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This repository only holds docs, the Claude Code plugin, and directory metadata. For help connecting an agent,
+        account problems, or questions about the Dregs MCP server itself, email support@dregs.com instead.
+  - type: dropdown
+    id: area
+    attributes:
+      label: What's affected?
+      options:
+        - README or a client setup snippet
+        - Claude Code plugin (manifest, skills, .mcp.json)
+        - server.json, glama.json, or chatgpt-app-submission.json
+        - Something else in this repository
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: What's wrong?
+      description: What did you expect, what happened instead, and which client and version were you using?
+    validations:
+      required: true

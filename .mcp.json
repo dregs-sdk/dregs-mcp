@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "dregs": {
+      "type": "http",
+      "url": "https://dregs.com/mcp"
+    }
+  }
+}

@@ -1,0 +1,35 @@
+# Publishes server.json to the official MCP Registry (registry.modelcontextprotocol.io) when a GitHub
+# release is published, or on demand. Authentication is domain-based: the dregs.com DNS TXT record
+# holds the public half of the Ed25519 key, and the private half lives in the MCP_PUBLISHER_PRIVATE_KEY
+# repository secret. See the README's release notes for the surface-release checklist.
+name: Publish to MCP Registry
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check that the release tag matches server.json
+        if: github.event_name == 'release'
+        run: |
+          version=$(node -p "require('./server.json').version")
+          tag="${GITHUB_REF_NAME#v}"
+          echo "server.json=$version tag=$tag"
+          test "$version" = "$tag"
+
+      - name: Install mcp-publisher
+        run: |
+          curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher
+          sudo mv mcp-publisher /usr/local/bin/
+
+      - name: Log in with the dregs.com DNS key
+        run: mcp-publisher login dns --domain dregs.com --private-key "${{ secrets.MCP_PUBLISHER_PRIVATE_KEY }}"
+
+      - name: Publish
+        run: mcp-publisher publish

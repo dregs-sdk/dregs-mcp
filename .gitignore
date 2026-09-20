@@ -1,0 +1,9 @@
+# Registry signing keys never belong in the repo.
+key.pem
+*.pem
+mcp-registry-auth
+
+node_modules/
+.env
+.env.*
+.DS_Store

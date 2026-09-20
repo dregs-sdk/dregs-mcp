@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Help connecting an agent or using the Dregs MCP server
+    url: mailto:support@dregs.com
+    about: Setup problems, account questions, feature requests, and anything about the hosted server go to Dregs support.
+  - name: Dregs manual, AI Agents chapter
+    url: https://dregs.com/manual/ai-agents/
+    about: Current setup steps for Claude, ChatGPT, Codex, Cursor, VS Code, and other clients.
+  - name: Report a security issue
+    url: https://dregs.com/legal/security/
+    about: Please don't file security reports as public issues. Email security@dregs.com instead.

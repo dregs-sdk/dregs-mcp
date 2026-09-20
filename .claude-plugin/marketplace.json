@@ -1,0 +1,26 @@
+{
+  "name": "dregs",
+  "description": "Dregs's Claude Code plugin: connect Claude to the Dregs MCP server for fraud and abuse investigation.",
+  "owner": {
+    "name": "Dregs",
+    "email": "support@dregs.com",
+    "url": "https://dregs.com"
+  },
+  "plugins": [
+    {
+      "name": "dregs",
+      "displayName": "Dregs",
+      "source": "./",
+      "description": "Dregs fraud and abuse detection integration. Investigate scored identities and their linked accounts, review and triage escalations, and tune badge and escalation rules against your own data. Connects over OAuth: run /mcp after installing.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Dregs"
+      },
+      "homepage": "https://dregs.com/manual/ai-agents/",
+      "repository": "https://github.com/dregs-sdk/dregs-mcp",
+      "license": "MIT",
+      "category": "security",
+      "tags": ["fraud-detection", "abuse-detection", "bot-detection", "trust-and-safety"]
+    }
+  ]
+}

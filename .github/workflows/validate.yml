@@ -1,0 +1,54 @@
+name: Validate
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check that every JSON file parses
+        run: |
+          for f in server.json glama.json .mcp.json chatgpt-app-submission.json .claude-plugin/plugin.json .claude-plugin/marketplace.json; do
+            node -e "JSON.parse(require('fs').readFileSync('$f', 'utf8'))" && echo "ok: $f"
+          done
+
+      - name: Check that server.json, plugin.json, and marketplace.json agree on the version
+        run: |
+          server=$(node -p "require('./server.json').version")
+          plugin=$(node -p "require('./.claude-plugin/plugin.json').version")
+          market=$(node -p "require('./.claude-plugin/marketplace.json').plugins[0].version")
+          echo "server.json=$server plugin.json=$plugin marketplace.json=$market"
+          test "$server" = "$plugin" && test "$server" = "$market"
+
+      - name: Check that every MCP URL agrees
+        run: |
+          server=$(node -p "require('./server.json').remotes[0].url")
+          mcp=$(node -p "require('./.mcp.json').mcpServers.dregs.url")
+          echo "server.json=$server .mcp.json=$mcp"
+          test "$server" = "$mcp"
+
+      - name: Validate server.json against the registry schema
+        run: |
+          schema=$(node -p "require('./server.json').\$schema")
+          curl -fsSL "$schema" -o /tmp/server.schema.json
+          # --strict=false because the registry schema uses the non-standard "example" keyword.
+          npx --yes ajv-cli@5 validate --spec=draft7 --strict=false -s /tmp/server.schema.json -d server.json
+
+      - name: Validate chatgpt-app-submission.json against the OpenAI schema
+        run: |
+          schema=$(node -p "require('./chatgpt-app-submission.json').\$schema")
+          curl -fsSL "$schema" -o /tmp/chatgpt.schema.json
+          npx --yes ajv-cli@5 validate --spec=draft2020 --strict=false -s /tmp/chatgpt.schema.json -d chatgpt-app-submission.json
+
+      - name: Validate the Claude Code plugin
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          claude plugin validate . --strict
