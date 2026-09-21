@@ -1,7 +1,7 @@
 {
   "name": "dregs",
   "displayName": "Dregs",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Dregs fraud and abuse detection integration. Investigate scored identities and their linked accounts, review and triage escalations, and tune badge and escalation rules against your own data. Connects over OAuth: run /mcp after installing.",
   "author": {
     "name": "Dregs",

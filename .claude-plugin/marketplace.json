@@ -12,7 +12,7 @@
       "displayName": "Dregs",
       "source": "./",
       "description": "Dregs fraud and abuse detection integration. Investigate scored identities and their linked accounts, review and triage escalations, and tune badge and escalation rules against your own data. Connects over OAuth: run /mcp after installing.",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "Dregs"
       },
@@ -20,7 +20,12 @@
       "repository": "https://github.com/dregs-sdk/dregs-mcp",
       "license": "MIT",
       "category": "security",
-      "tags": ["fraud-detection", "abuse-detection", "bot-detection", "trust-and-safety"]
+      "tags": [
+        "fraud-detection",
+        "abuse-detection",
+        "bot-detection",
+        "trust-and-safety"
+      ]
     }
   ]
 }

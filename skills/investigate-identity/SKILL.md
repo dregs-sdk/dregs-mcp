@@ -64,6 +64,7 @@ Each of these changes the team's data, so describe it and wait for a yes:
 - **`analyze_identity`** (admin) to re-score after a rule, dataset, or mapping change, so the user can see the
   effect without waiting for the background cycle.
 
-If the investigation shows a pattern the current rules miss, hand off to the `tune-rules` skill rather than
-inventing a rule mid-investigation. Results carry a `dashboardUrl`; give it to the user so they can see the same
+If the links point to a group of related accounts rather than one bad actor, hand off to the `investigate-cluster`
+skill, which walks the whole ring. If the investigation shows a pattern the current rules miss, hand off to the
+`tune-rules` skill rather than inventing a rule mid-investigation. Results carry a `dashboardUrl`; give it to the user so they can see the same
 identity in Dregs.

@@ -31,8 +31,8 @@ A token acts as you within the team where you created it, so treat it like a pas
 
 ## Connecting Claude Code to Dregs
 
-The quickest way is the plugin from this repository, which adds the Dregs MCP server plus a few skills that encode a
-sensible investigation workflow:
+The quickest way is the plugin from this repository, which adds the Dregs MCP server plus skills for integrating Dregs
+into your application and for working with the data afterwards:
 
 ```
 /plugin marketplace add dregs-sdk/dregs-mcp
@@ -66,6 +66,27 @@ The equivalent project-level `.mcp.json`:
   }
 }
 ```
+
+### Plugin skills
+
+The plugin's skills are workflows, not tool schemas; each reads the relevant manual chapter through
+`get_documentation` before it acts, proposes changes for you to review, and confirms before anything is written.
+
+| Skill | What it does |
+| --- | --- |
+| `connect` | Connects Claude Code to the Dregs MCP server over OAuth or a token and verifies it with `get_account_summary`. |
+| `setup` | Drives a complete integration of Dregs into your application, checking what exists and asking which parts to do. |
+| `setup-tracking` | Adds the `dregs.js` snippet, `dregs.identify()` at signup and login, and `dregs.track()` for key actions, then verifies events arrive. |
+| `setup-events` | Sends server-side events to `POST /api/events` and maps your event names and identity fields to Dregs's canonical types. |
+| `setup-webhooks` | Builds a webhook receiver with signature verification and a first response to scores and escalations, then verifies deliveries. |
+| `health-check` | Read-only diagnosis of an integration: ingestion, identification, mappings, analyzer observations, limits. |
+| `investigate-identity` | Walks one identity from scores to observations, history, links, devices, and events, and reaches a verdict. |
+| `investigate-cluster` | Maps a ring of related accounts across shared devices, IPs, and sessions, with the evidence for each member. |
+| `tune-rules` | Authors or adjusts badge and escalation rules with a preview of their impact and confirmation before writing. |
+| `weekly-review` | A read-only account health review: volume, score distribution, rule activity, open escalations, usage. |
+
+The integration skills edit your code, so they need a client with repository access such as Claude Code or Codex. The
+others work anywhere the server is connected.
 
 ## Connecting Claude Desktop and claude.ai to Dregs
 

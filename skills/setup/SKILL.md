@@ -1,52 +1,63 @@
 ---
 name: setup
-description: Connect Claude Code to Dregs's MCP server and verify the connection. Use when Dregs tools are missing, a Dregs tool returns 401 or unauthorized, or the user asks to set up, connect, or reconnect Dregs.
+description: Integrate Dregs into the user's application, end to end and under their supervision. Drives the setup-tracking, setup-events, and setup-webhooks skills in order, checking the account and confirming each step with the user. Use when the user wants to add Dregs to their app, integrate Dregs, install the tracking script, start sending events, or wire up webhooks, and it is not clear which part they need.
 ---
 
-# Setting up the Dregs MCP connection
+# Integrating Dregs into an application
 
-The Dregs plugin registers one MCP server, `dregs`, at `https://dregs.com/mcp`. It authenticates with OAuth, so the
-user has to approve the connection once in their browser. You cannot complete that approval for them, but you can get
-them there and confirm the result.
+A complete Dregs integration has four parts, and most of the value arrives with the first two:
 
-## Check whether Dregs is connected
+1. **Tracking** (`setup-tracking`): the `dregs.js` snippet on every page, `dregs.identify()` at signup and login,
+   and `dregs.track()` for the actions that matter. This is where device fingerprints and behavior come from.
+2. **Backend events** (`setup-events`): server-side `POST /api/events` for actions the browser never sees, and the
+   mappings that tell Dregs which of the user's event names and identity fields mean registration, login, email,
+   and so on. Without the mappings, most analyzers stay quiet.
+3. **Webhooks** (`setup-webhooks`): an endpoint that verifies Dregs's signature and does something with scores and
+   escalations, so the integration acts instead of only reporting.
+4. **Rules** (`tune-rules`): the badges and escalations that decide what "something" is. Usually a later step, once
+   there is data to look at.
 
-Call `get_account_summary`. Three outcomes:
+Every integration is specific to the user's stack, routes, auth flow, and event names. Your job is to walk them
+through it, propose concrete changes to their code, and let them decide. Do not guess at their architecture when you
+can look, and do not look at what you can ask.
 
-- **It returns an account.** The connection works. Tell the user which team it acts in and the roles it holds there,
-  because everything the agent does is scoped to that team, and writes need the admin role.
-- **The tool is missing.** The plugin's MCP server hasn't started or isn't authenticated. Follow the steps below.
-- **It fails with 401 or "unauthorized".** The OAuth connection was revoked, the access token was revoked from the
-  dashboard, or the user is using a token that was revoked or mistyped. Follow the steps below.
+## Before you start
 
-## Connect with OAuth
+1. **Confirm the connection.** Call `get_account_summary`. If it fails or the tool is missing, follow the `connect`
+   skill first. Note the team name; everything you set up lands in that team.
+2. **See what is already there.** `dashboard_stats` and `list_identities` tell you whether any data is flowing.
+   `search_events` shows the event names in use. `list_mappings` (kind `EVENT_TYPE` and `IDENTITY_FIELD`, scope
+   `CUSTOMER`) shows what is already mapped. An account with events but no identified users, or identified users but
+   no mappings, needs a different starting point than an empty one.
+3. **Look at the codebase.** Identify the framework, the templating or layout entry point where a script tag belongs,
+   where signup and login complete, where server-side actions such as payments and password resets happen, and how
+   the app handles environment variables and incoming webhooks today.
+4. **Read the manual.** Call `get_documentation` with `GETTING_STARTED` now, and the chapter each sub-skill names
+   before its step. The snippets in the manual are the ones to use; do not reproduce them from memory.
+5. **Ask what they want.** Present the four parts with a one-line status for each (present, partial, missing) and ask
+   which to do now. A first session usually covers tracking and backend events and stops; webhooks come once scores
+   exist to act on.
 
-Ask the user to:
+## Credentials
 
-1. Run `/mcp` in Claude Code.
-2. Select **dregs** from the list and choose **Authenticate**.
-3. Sign in to the Dregs dashboard if asked, then approve the connection. If they belong to more than one Dregs team,
-   the team they pick on the approval page is the one the agent will work in.
-4. Come back and confirm.
+The user creates API credentials in the Dregs dashboard under **Settings → Credentials**. Each credential has a
+public key (`pk_…`, safe in frontend code) and a secret key (`sk_…`, server only, shown once). You cannot create
+credentials, and you should never ask the user to paste a secret key into the conversation or write one into a file
+that will be committed. Have them put the public key where the snippet needs it and the secret key in an environment
+variable, and reference the variable in the code you write.
 
-Then call `get_account_summary` again to verify.
+## Running the steps
 
-## Connect with an MCP token instead
+Work through the chosen parts in order, one sub-skill at a time. For each:
 
-Only for headless use or clients where OAuth isn't possible. Tell the user to create a token in the Dregs dashboard
-under **Settings → AI Agents**, copy it immediately (it's shown once), and register the server outside the plugin:
+- Explain what will change and why, then make the change as an edit the user can review, or as a proposed diff if
+  they prefer to apply it themselves.
+- Verify with Dregs before moving on. Each sub-skill ends with a check through the MCP tools (events arriving,
+  identities identified, mappings in place, a test delivery received). A step is not done until Dregs confirms it.
+- Keep a short running summary of what was added and where, so the user can find it later.
 
-```bash
-claude mcp add --transport http dregs https://dregs.com/mcp --header "Authorization: Bearer YOUR_TOKEN"
-```
+## Finishing
 
-Never ask the user to paste a token into the conversation, and never write a token into a file that will be
-committed.
-
-## Troubleshooting
-
-- **Stale or missing tools after a change:** ask the user to run `/mcp` and reconnect, or restart Claude Code.
-- **Wrong team:** the user has to disconnect and reconnect, choosing the right team on the approval page.
-- **A write is refused with a role message:** the connected user is not an admin on that team. Reads still work;
-  hand the proposed change to an admin instead of retrying.
-- **Still stuck:** point them at https://dregs.com/manual/ai-agents/ or support@dregs.com.
+Summarize the integration: files touched, environment variables the user must set in each environment, the events and
+identity fields now flowing, the mappings applied, and what remains. Suggest the `health-check` skill for a full
+diagnosis after a day of traffic, and the `tune-rules` skill once there are scores worth acting on.
