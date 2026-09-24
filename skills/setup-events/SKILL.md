@@ -19,13 +19,39 @@ are still stored but contribute little.
    failures, refunds, subscription changes, password resets and changes, MFA changes, role and permission changes,
    invitations, API-key usage, and background jobs the user triggered. Avoid double-counting actions the frontend
    already tracks.
-3. Write one small client for `POST /api/events` in the app's language, reading the secret key (`sk_…`) from an
-   environment variable, sending the same stable user ID the frontend passes to `dregs.identify()`, and setting an
-   idempotent `id` from the app's own event or transaction ID wherever one exists so retries are safe. Make it
-   fire-and-forget or queued; a Dregs outage must not fail the user's request.
-4. Call it from the places found in step 2, passing profile data in `identity.data` where the server knows something
-   the browser does not (plan, account age, verified phone).
-5. Never write the secret key into a file that will be committed, and never ask the user to paste it into the
+3. Use the official Dregs SDK for the app's language. Writing an HTTP client by hand is the fallback, for languages
+   that do not have one yet.
+
+   | Language | Package | Install |
+   | --- | --- | --- |
+   | Python 3.10+ | `dregs` on PyPI | `pip install dregs` or `uv add dregs` |
+   | TypeScript and Node 20+ | `@dregs/sdk` on npm | `npm install @dregs/sdk` |
+   | Java 17+ | `com.dregs:dregs-sdk` on Maven Central | add the Gradle or Maven coordinate |
+   | Ruby 3.1+ | `dregs` on RubyGems | `bundle add dregs` |
+   | PHP 8.2+ | `dregs/dregs-sdk` on Packagist | `composer require dregs/dregs-sdk` |
+
+   On npm the bare `dregs` package is the browser tracking script, not the SDK; the server SDK is `@dregs/sdk`. On
+   PyPI and RubyGems the bare `dregs` name is the SDK. Each SDK's source is at
+   `github.com/dregs-sdk/dregs-sdk-<language>`.
+
+4. Construct the client with the secret key (`sk_…`) read from an environment variable. The SDKs send it as a bearer
+   token and are server-side only; the public key (`pk_…`) stays with the frontend script.
+
+   All five expose the same surface, named to each language's idiom: `track(type, identity, data, identity_data,
+   event_id, timestamp, source)`, `identities.get(id)`, `identities.scores(id)`, `identities.analysis(id)`,
+   `identities.analyze(id)`, and webhook signature verification. `identities.scores()` returns the four category
+   integers, which is the cheap read most integrations want; `identities.analysis()` returns the observations behind
+   them. Typed errors per status (400, 401, 402, 404, 429, 5xx), retries with backoff, and an idempotency id on every
+   event are built in, so do not rebuild them.
+
+5. Call it from the places found in step 2, sending the same stable user ID the frontend passes to
+   `dregs.identify()`, and the app's own event or transaction ID as the event id wherever one exists so a retry
+   cannot double-count; the SDK generates one when you do not supply it. Pass profile data as identity data where the
+   server knows something the browser does not (plan, account age, verified phone). Make the call fire-and-forget or
+   queued; a Dregs outage must not fail the user's request.
+6. Only if no SDK covers the language, write one small client for `POST /api/events` with the request shape from step
+   1, and add the retries and the idempotent `id` yourself.
+7. Never write the secret key into a file that will be committed, and never ask the user to paste it into the
    conversation. They set the variable; you reference it.
 
 Verify with `search_events` filtered to a test user: the backend events appear alongside the frontend ones under the

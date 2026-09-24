@@ -77,7 +77,7 @@ The plugin's skills are workflows, not tool schemas; each reads the relevant man
 | `connect` | Connects Claude Code to the Dregs MCP server over OAuth or a token and verifies it with `get_account_summary`. |
 | `setup` | Drives a complete integration of Dregs into your application, checking what exists and asking which parts to do. |
 | `setup-tracking` | Adds the `dregs.js` snippet, `dregs.identify()` at signup and login, and `dregs.track()` for key actions, then verifies events arrive. |
-| `setup-events` | Sends server-side events to `POST /api/events` and maps your event names and identity fields to Dregs's canonical types. |
+| `setup-events` | Sends server-side events with the official Dregs SDK for your language and maps your event names and identity fields to Dregs's canonical types. |
 | `setup-webhooks` | Builds a webhook receiver with signature verification and a first response to scores and escalations, then verifies deliveries. |
 | `health-check` | Read-only diagnosis of an integration: ingestion, identification, mappings, analyzer observations, limits. |
 | `investigate-identity` | Walks one identity from scores to observations, history, links, devices, and events, and reaches a verdict. |
@@ -200,6 +200,25 @@ and hands off.
 
 Every tool carries MCP annotations (`readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`), so clients
 that honor them can prompt before writes and deletes.
+
+## Server SDKs
+
+Getting data into Dregs is a separate job from connecting an agent to it, and there is an official SDK for each of five
+server languages. They cover sending events, reading an identity with its scores or its full analysis, requesting a
+re-score, and verifying webhook signatures, with typed errors per status and retries with backoff built in. Reach for
+one before writing an HTTP client by hand; the plugin's `setup-events` skill does.
+
+| Language | Package | Install | Minimum | Source |
+| --- | --- | --- | --- | --- |
+| Python | `dregs` on PyPI | `pip install dregs` or `uv add dregs` | Python 3.10 | [dregs-sdk-python](https://github.com/dregs-sdk/dregs-sdk-python) |
+| TypeScript | `@dregs/sdk` on npm | `npm install @dregs/sdk` | Node 20 | [dregs-sdk-typescript](https://github.com/dregs-sdk/dregs-sdk-typescript) |
+| Java | `com.dregs:dregs-sdk` on Maven Central | add the Gradle or Maven coordinate | Java 17 | [dregs-sdk-java](https://github.com/dregs-sdk/dregs-sdk-java) |
+| Ruby | `dregs` on RubyGems | `bundle add dregs` | Ruby 3.1 | [dregs-sdk-ruby](https://github.com/dregs-sdk/dregs-sdk-ruby) |
+| PHP | `dregs/dregs-sdk` on Packagist | `composer require dregs/dregs-sdk` | PHP 8.2 | [dregs-sdk-php](https://github.com/dregs-sdk/dregs-sdk-php) |
+
+The SDKs are server-side only and authenticate with a credential's secret key (`sk_…`) as a bearer token. Browser
+tracking remains the `dregs.js` script with the public key (`pk_…`). On npm the bare `dregs` package is that browser
+script, not the SDK; the server SDK is `@dregs/sdk`.
 
 ## Safety practices for AI fraud review
 
