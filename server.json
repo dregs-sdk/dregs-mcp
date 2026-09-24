@@ -3,7 +3,7 @@
   "name": "com.dregs/dregs-mcp",
   "title": "Dregs",
   "description": "Fraud and abuse detection for SaaS: investigate scored identities, triage escalations, tune rules.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "websiteUrl": "https://dregs.com/manual/ai-agents/",
   "repository": {
     "url": "https://github.com/dregs-sdk/dregs-mcp",

@@ -28,7 +28,9 @@ the receiver and the first response; the channel itself is created in the dashbo
    by default need an exception for this route, or the signature will never match.
 2. Verify the `X-Dregs-Signature` header: HMAC-SHA256 of the raw body with the channel's signing secret, hex
    encoded, compared in constant time. Reject with 401 on mismatch. Read the secret from an environment variable;
-   the user gets it once when they create the channel, and it is not the `sk_` API key.
+   the user gets it once when they create the channel, and it is not the `sk_` API key. The official Dregs SDKs
+   verify signatures for you, so use that helper where the app already has the SDK; in TypeScript it takes an
+   options object, `verifyWebhook({ payload, signature, secret })`.
 3. Check `X-Dregs-Timestamp` is recent (a few minutes) to blunt replays, and use the event's identifiers to make
    handling idempotent, since Dregs retries failed deliveries.
 4. Dispatch on the `event` field in the body (also in `X-Dregs-Event`): identity scored, badges changed, escalation

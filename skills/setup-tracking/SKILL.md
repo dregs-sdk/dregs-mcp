@@ -28,6 +28,10 @@ Add the loader snippet from the manual to the shared layout, with the public key
 has a content security policy, note that `https://dregs.com` must be allowed for scripts and connections, and show
 the exact directive change rather than loosening the policy.
 
+The tracking script is the browser half of an integration and takes the public key. Server-side code uses an official
+Dregs SDK with the secret key instead, which the `setup-events` skill covers. On npm the bare `dregs` package is this
+browser script; the server SDK is `@dregs/sdk`. Do not install either one in place of the other.
+
 ## Identify users
 
 Call `dregs.identify(id, data)` after signup and after login, as early as the client knows the user. Pass the stable

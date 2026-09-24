@@ -9,9 +9,10 @@ A complete Dregs integration has four parts, and most of the value arrives with 
 
 1. **Tracking** (`setup-tracking`): the `dregs.js` snippet on every page, `dregs.identify()` at signup and login,
    and `dregs.track()` for the actions that matter. This is where device fingerprints and behavior come from.
-2. **Backend events** (`setup-events`): server-side `POST /api/events` for actions the browser never sees, and the
-   mappings that tell Dregs which of the user's event names and identity fields mean registration, login, email,
-   and so on. Without the mappings, most analyzers stay quiet.
+2. **Backend events** (`setup-events`): server-side events for the actions the browser never sees, sent with the
+   official Dregs SDK for the app's language (Python, TypeScript, Java, Ruby, or PHP) or with `POST /api/events`
+   where there is no SDK, and the mappings that tell Dregs which of the user's event names and identity fields mean
+   registration, login, email, and so on. Without the mappings, most analyzers stay quiet.
 3. **Webhooks** (`setup-webhooks`): an endpoint that verifies Dregs's signature and does something with scores and
    escalations, so the integration acts instead of only reporting.
 4. **Rules** (`tune-rules`): the badges and escalations that decide what "something" is. Usually a later step, once
