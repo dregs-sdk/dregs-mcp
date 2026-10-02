@@ -185,6 +185,7 @@ when they connect, so this table is a map of the surface rather than the source 
 | --- | --- |
 | Account and dashboard | `get_account_summary`, `dashboard_stats`, `dashboard_score_distribution`, `dashboard_rule_activity`, `get_documentation` |
 | Identities and events | `list_identities`, `get_identity`, `get_identity_analysis`, `get_identity_history`, `get_identity_links`, `search_events`, `analyze_identity`, `set_identity_disregarded` |
+| Groups | `list_groups`, `get_group` |
 | Devices | `list_devices`, `get_device` |
 | Escalations | `list_escalations`, `get_escalation`, `escalation_summary`, `update_escalation_status` |
 | Escalation rules | `list_escalation_rules`, `get_escalation_rule`, `preview_escalation_rule`, `create_escalation_rule`, `update_escalation_rule`, `delete_escalation_rule` |

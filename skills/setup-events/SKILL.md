@@ -38,7 +38,7 @@ are still stored but contribute little.
    token and are server-side only; the public key (`pk_…`) stays with the frontend script.
 
    All five expose the same surface, named to each language's idiom: `track(type, identity, data, identity_data,
-   event_id, timestamp, source)`, `identities.get(id)`, `identities.scores(id)`, `identities.analysis(id)`,
+   groups, event_id, timestamp, source)`, `identities.get(id)`, `identities.scores(id)`, `identities.analysis(id)`,
    `identities.analyze(id)`, and webhook signature verification. `identities.scores()` returns the four category
    integers, which is the cheap read most integrations want; `identities.analysis()` returns the observations behind
    them. Typed errors per status (400, 401, 402, 404, 429, 5xx), retries with backoff, and an idempotency id on every
@@ -47,8 +47,9 @@ are still stored but contribute little.
 5. Call it from the places found in step 2, sending the same stable user ID the frontend passes to
    `dregs.identify()`, and the app's own event or transaction ID as the event id wherever one exists so a retry
    cannot double-count; the SDK generates one when you do not supply it. Pass profile data as identity data where the
-   server knows something the browser does not (plan, account age, verified phone). Make the call fire-and-forget or
-   queued; a Dregs outage must not fail the user's request.
+   server knows something the browser does not (plan, account age, verified phone). If the app has organizations,
+   teams, or workspaces, pass the ones the action happened in as groups, each with the app's own type name, ID, and
+   a `name` in its data. Make the call fire-and-forget or queued; a Dregs outage must not fail the user's request.
 6. Only if no SDK covers the language, write one small client for `POST /api/events` with the request shape from step
    1, and add the retries and the idempotent `id` yourself.
 7. Never write the secret key into a file that will be committed, and never ask the user to paste it into the
