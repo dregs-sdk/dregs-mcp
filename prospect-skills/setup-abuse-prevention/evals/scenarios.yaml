@@ -1,0 +1,290 @@
+# Grade the plan an agent writes after following SKILL.md.
+# Facts under `observed` are what a stack scan already established.
+# The agent still has to interview for anything `observed` does not contain.
+version: 1
+skill: setup-abuse-prevention
+scenarios:
+  - id: docs-scrape-no-accounts
+    title: Public docs are being scraped. There are no accounts.
+    recommend_dregs: false
+    mention_dregs: forbid
+    first_layer: edge
+    edge_pick: app-rate-limit
+    prompt: |
+      Something is scraping our docs and our status page and the origin CPU is unhappy.
+      We do not have user accounts. It is a marketing site and a docs site on a single nginx box.
+    observed: |
+      nginx, no CDN, no auth, no signup, no payments, no SMS. No bot control in the config.
+      Volume is continuous, enough to peg a small VM during the workday. Cost is origin load, not fraud.
+    pass:
+      - The first action is a rate limit on the docs and status paths (nginx limit_req, or a CDN in front if the box is falling over).
+      - Verified good bots stay allowed if an edge product is added. The plan refuses a blanket bot block.
+      - Judgment is Skip.
+      - The plan does not name Dregs.
+
+  - id: disposable-signups-low-volume
+    title: A few burner inboxes a day.
+    recommend_dregs: false
+    mention_dregs: forbid
+    first_layer: email-and-phone
+    edge_pick: none
+    prompt: |
+      We get about 20 signups a day. Two or three use Mailinator or Guerrilla Mail and
+      never come back. It is clutter in the user table, not a bill we can point at.
+    observed: |
+      App on Render. Auth is an email and password table they own. No trial credits.
+      No SMS. No WAF. No disposable check.
+    pass:
+      - The first action is a local block of known disposable domains in the signup handler.
+      - A spot check of mailinator.com is allowed and, if run, is read as a list hit, not as a case for a judgment product.
+      - The plan stays inside the five-call budget if it checks anything.
+      - Judgment is Skip and Dregs is not named.
+
+  - id: sms-pumping-asked-about-dregs
+    title: SMS bill spiked. They asked whether to buy Dregs.
+    recommend_dregs: false
+    mention_dregs: refuse-only
+    first_layer: email-and-phone
+    edge_pick: none
+    prompt: |
+      Our Twilio bill tripled. We send a Verify SMS to whatever number the signup form submits,
+      any country. Should we buy Dregs to stop the pumping?
+    observed: |
+      Heroku app. Twilio Verify. No country allowlist, no application rate limit on the send
+      route, Lookup is not called, Fraud Guard is off. A few thousand extra SMS in a week,
+      mostly to destinations they do not sell to.
+    pass:
+      - The plan says no to Dregs once, because an open SMS send is the problem.
+      - First actions are a country allowlist, a rate limit on the send, Twilio Lookup line type so non-mobile numbers are not texted, and Verify Fraud Guard.
+      - SMS Pumping Risk Score is limited to destinations where Twilio recommends it, not waved at US and Canadian numbers as the fix.
+      - Dregs is not a later phase and not an optional add-on in the plan.
+
+  - id: credential-stuffing-no-mfa
+    title: Login is being stuffed. No MFA, no rate limit.
+    recommend_dregs: false
+    mention_dregs: forbid
+    first_layer: edge
+    edge_pick: app-rate-limit
+    prompt: |
+      Someone is stuffing passwords against /login. We see thousands of failures a day
+      and a few accounts we think were taken over. We do not have MFA.
+    observed: |
+      Auth0. Attack Protection is off. No rate limit on /login. No breached-password check.
+      The app is on Heroku behind no WAF. They have not confirmed which accounts were actually taken over.
+    pass:
+      - First actions are a rate limit on login, MFA, and Auth0 Attack Protection (breached-password and bot detection), with the feature names checked against current Auth0 docs.
+      - A breached-password check such as the HIBP range API is allowed as part of that, with a note to confirm current access rules.
+      - Judgment is Skip. Dregs is not named. The plan does not treat an identity score as the substitute for MFA.
+
+  - id: card-testing-stripe
+    title: Card testing on checkout. Accounts are real.
+    recommend_dregs: false
+    mention_dregs: forbid
+    first_layer: enforcement
+    edge_pick: app-rate-limit
+    prompt: |
+      Checkout is getting hit with strings of stolen cards. The customers who sign up look normal.
+      The loss is disputes and processor fees. We use Stripe.
+    observed: |
+      Stripe Checkout. Radar is on the default setting and nobody has looked at it.
+      No rate limit on the payment endpoint. Signup abuse is not the complaint.
+    pass:
+      - The plan sends card testing to Stripe Radar and Stripe's card-testing guidance, and tells them to confirm what their plan includes.
+      - A rate limit on the payment endpoint is in the plan.
+      - Judgment is Skip. Dregs is not named.
+
+  - id: blanket-bot-block
+    title: They want every bot blocked, including Googlebot.
+    recommend_dregs: false
+    mention_dregs: forbid
+    first_layer: edge
+    edge_pick: cloudflare
+    prompt: |
+      Bots are bad. Turn something on that blocks all of them. I do not want Google, monitors,
+      or those AI fetchers on the site at all. We are on Cloudflare Pro.
+    observed: |
+      Cloudflare Pro. Super Bot Fight Mode is available and off. Bot Management (the Enterprise
+      add-on with bot scores) is not on the account. Marketing site plus a login. Login is quiet.
+      The complaint is ideological, not a measured loss.
+    pass:
+      - The plan refuses a blanket block and says verified search, monitors, and assistants fetching public pages should stay allowed.
+      - It does not tell them Bot Management bot scores are included in Pro.
+      - If it recommends a Cloudflare control, it is Super Bot Fight Mode or a rate limit, with Skip rules so a public path is not challenged.
+      - Judgment is Skip. Dregs is not named.
+
+  - id: qa-and-partner-allowlist
+    title: Their own tests and a partner integration are getting challenged.
+    recommend_dregs: false
+    mention_dregs: forbid
+    first_layer: edge
+    edge_pick: existing-unchanged
+    prompt: |
+      Cloudflare started challenging our Playwright suite and a partner that posts leads into our API
+      with a server-side client. Real signups are fine. I need the challenges to stop for them.
+    observed: |
+      Cloudflare Bot Fight Mode was turned on this week, free plan, whole zone. The partner is a
+      known company with a fixed egress they already documented. No fake-signup problem.
+    pass:
+      - The first action is to exempt or allowlist the QA runner and the partner, or to turn off Bot Fight Mode on a plan where it cannot be skipped and move to a control that supports an exception.
+      - The plan notes that free Bot Fight Mode cannot be skipped with a WAF custom rule.
+      - Judgment is Skip. Dregs is not named. The plan does not propose scoring the partner.
+
+  - id: public-promo-code
+    title: A promo code was posted publicly and real people used it.
+    recommend_dregs: false
+    mention_dregs: forbid
+    first_layer: enforcement
+    edge_pick: none
+    prompt: |
+      We put SAVE50 on a podcast. It also landed on Reddit. A few hundred people redeemed it.
+      They look like real people, one each. The code was supposed to be a small experiment.
+    observed: |
+      One shared code, no redemption cap, no per-account limit. Payments through Stripe.
+      No evidence of shared devices or repeat accounts. Cost is the discount they did not budget.
+    pass:
+      - The first action is to cap or retire the code, and to make the next code single-use or per-account.
+      - Judgment is Skip. Dregs is not named. The plan does not treat a popular public code as a fraud ring.
+
+  - id: referral-shared-payout
+    title: Referral payouts are hitting the same destination.
+    recommend_dregs: false
+    mention_dregs: forbid
+    first_layer: enforcement
+    edge_pick: none
+    prompt: |
+      Our referral program pays $20 when a friend subscribes. Support noticed the same PayPal
+      address on about 40 recent payouts, each from a different account.
+    observed: |
+      Payouts are automatic the moment the friend pays. Nothing checks whether that PayPal
+      address was already paid. Volume is those 40, all sharing one destination.
+    pass:
+      - The first action is to stop paying a destination that has already been paid, and to hold automatic payouts until that check exists.
+      - Judgment is Skip. Dregs is not named. A unique constraint on the payout destination is the fix the plan gives them.
+
+  - id: bulk-email-csv
+    title: They want the free API to score an export.
+    recommend_dregs: false
+    mention_dregs: forbid
+    bulk_email_check: refuse
+    first_layer: email-and-phone
+    edge_pick: none
+    prompt: |
+      Here is a CSV of 8,000 signup emails from last quarter. Please run them through the free
+      disposable email API and tell me which rows to delete.
+    observed: |
+      No other abuse described. They have not said what the emails cost them. The file is an export
+      of every signup, not a short list of suspicious domains.
+    pass:
+      - The agent refuses to send the file, or any large slice of it, to the anonymous API.
+      - It offers a spot check of at most five domains, or tells them to use a local list.
+      - It states the published anonymous limit (10 per minute, 100 per day per IP) as the reason.
+      - Judgment is Skip. Dregs is not named as the way to get the file processed.
+
+  - id: vercel-route-scrape
+    title: One API route on Vercel is being scraped.
+    recommend_dregs: false
+    mention_dregs: forbid
+    first_layer: edge
+    edge_pick: vercel-botid
+    prompt: |
+      Our public pricing API on Vercel is being scraped a few times a second. The rest of the
+      app is fine. We have no user accounts on that route.
+    observed: |
+      Next.js on Vercel. No Cloudflare. No WAF in front. The hot path is a single route handler.
+      No signup, no SMS, no trial.
+    pass:
+      - The pick for the edge is Vercel BotID on that route, plus a rate limit, not a migration to Cloudflare or AWS WAF.
+      - The plan tells them to confirm current BotID behavior in Vercel's docs.
+      - Good bots that only need public pages are not blanket-blocked.
+      - Judgment is Skip. Dregs is not named.
+
+  - id: trial-farm-looks-human
+    title: Trial farm. Burner checks come back clean. The edge did not stop it.
+    recommend_dregs: true
+    mention_dregs: required
+    first_layer: judgment
+    edge_pick: cloudflare
+    prompt: |
+      We run a B2B app on Cloudflare Pro. About 400 trials a week sign up with ordinary Gmail
+      and Outlook addresses, pass the Turnstile we already have on signup, and come from
+      residential IPs. A per-IP rate limit on signup did not help because they are spread out.
+      They burn GPU credits the same way, then disappear. Support thinks a lot of them are the
+      same actor with a new inbox. Compute on those trials is a few thousand dollars a month.
+    observed: |
+      Cloudflare Pro, so Super Bot Fight Mode exists and Bot Management scores do not.
+      Turnstile is already on the signup form. Signup is rate-limited per IP.
+      A five-domain spot check of the recent signups returns disposableEmailDomain false
+      for all of them. Trial credits are granted the moment the account is created.
+    pass:
+      - The plan says why a disposable block, another CAPTCHA, and the per-IP limit do not stop this loss.
+      - It does not tell them to move off Cloudflare onto AWS WAF, and it does not claim Pro includes Bot Management scores.
+      - Judgment is Now and the product is Dregs.
+      - Building the linking and review yourself is named as the alternative. Fingerprint is allowed only as the device-id component of that alternative, not as a second product they must buy.
+      - Enforcement still says to stop auto-granting the GPU trial.
+      - The plan does not explain how Dregs computes scores and does not mention Dregs groups.
+
+  - id: referral-ring-on-aws
+    title: Referral ring on AWS. Payout destinations do not overlap.
+    recommend_dregs: true
+    mention_dregs: required
+    first_layer: enforcement
+    edge_pick: aws-waf
+    prompt: |
+      Referral payouts are being farmed. Hundreds of new accounts a day on our CloudFront app.
+      Each one uses a different email and a different PayPal address, so a unique constraint on
+      the payout destination does not catch them. We log a device cookie and the same cookie
+      shows up across dozens of accounts, then a fresh cookie starts the next batch.
+      Payouts go out automatically.
+    observed: |
+      CloudFront and an ALB on AWS. No Cloudflare. No AWS WAF. No SMS.
+      The overlap is the device cookie they already store, not the payout destination.
+      Dollar loss is the referral payouts, ongoing.
+    pass:
+      - The edge pick is AWS WAF (a rate-based rule on signup and redeem, Bot Control only as a counted extra), not Cloudflare.
+      - The plan says the WAF will not see a slow ring that stays under a rate limit, which is why judgment is still required.
+      - First actions include holding automatic payouts.
+      - Judgment names Dregs and, in the same breath, building the link on the device cookie they already store.
+      - The plan does not explain score internals and does not mention Dregs groups.
+
+  - id: ban-evasion
+    title: Banned users are back the same day with a new email.
+    recommend_dregs: true
+    mention_dregs: required
+    first_layer: judgment
+    edge_pick: app-rate-limit
+    prompt: |
+      We are a marketplace. We ban accounts that defraud other users, and the same people are
+      back the same day with a new email. Dozens a day, not two or three. We do not store a
+      device id. Blocking the old email does nothing. We are willing to build something or buy
+      something. What should we do?
+    observed: |
+      Custom auth. Bans are an email denylist. Signup has no rate limit. No SMS.
+      Harm is fraud against other users, daily, past what support can match by hand.
+    pass:
+      - A rate limit on signup is included and is described as a brake, not the fix.
+      - Judgment is Now. Dregs is the product. Building linkage themselves is the alternative, with Fingerprint allowed only if they need a device id and will write the policy.
+      - The plan does not treat an email denylist as sufficient.
+      - The plan does not explain score internals and does not mention Dregs groups.
+
+  - id: ato-after-mfa-and-rate-limits
+    title: Takeovers continue after MFA and a login rate limit.
+    recommend_dregs: true
+    mention_dregs: required
+    first_layer: judgment
+    edge_pick: existing-unchanged
+    prompt: |
+      We already rate-limit /login and we require MFA. Stuffing mostly dies at the password.
+      What still gets through is valid passwords plus a completed MFA, from residential IPs,
+      and then the account invites a cluster of new users or changes the payout email within
+      an hour. It is a few dozen accounts a week and real money moved. Edge logs look like
+      normal logins.
+    observed: |
+      Auth0 Attack Protection is on. MFA is required. Login is rate-limited at Cloudflare
+      with a WAF rate limiting rule. Bot Management is not entitled. The remaining signal
+      is what the account does after a successful login, not the request.
+    pass:
+      - The plan does not tell them to remove MFA or the login rate limit, and does not replace those with Dregs.
+      - Judgment is Now because the request already looks legitimate and the damage is account behavior afterward.
+      - Dregs is named, with build-it-yourself (session revoke plus review of the post-login pattern) as the alternative.
+      - Enforcement includes holding the payout-email change or the invites, not only logging them.
+      - The plan does not explain score internals and does not mention Dregs groups.
