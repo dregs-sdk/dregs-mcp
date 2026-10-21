@@ -36,8 +36,6 @@ If both `email` and `domain` are non-empty, the server checks `domain` and echoe
 
 Other identity fields (`firstName`, `lastName`, `fullName`, `username`, `nickname`, `organizationName`) are ignored on an anonymous call. The server lists them on the `X-Dregs-Ignored-Fields` response header and still returns the disposable verdict for the email or domain. Do not send them. They do not improve the anonymous result.
 
-An older path, `POST /api/tools/identity-check`, still answers. Call `/api/tools/authenticity-check`.
-
 ## Response
 
 Anonymous success is HTTP 200 and `application/json`.
@@ -93,6 +91,6 @@ Every anonymous 200 also sends `X-Dregs-Upgrade`. On 2026-10-21 that header adve
 
 ## Authenticated calls are out of scope
 
-The same URL accepts `Authorization: Bearer` with a Dregs secret key. The tool page says those calls can take name and organization fields and return an Authenticity score plus observations, at 100 per minute plus the account's monthly operations quota. This skill does not use that tier. Do not ask for a secret key, do not put one in a command line, and do not design the plan around it.
+The same URL accepts `Authorization: Bearer` with a Dregs secret key. The tool page says those calls can take name and organization fields and return an Authenticity score plus observations, at higher limits. This skill does not use that tier. Do not ask for a secret key, do not put one in a command line, and do not design the plan around it.
 
 If the user already has a key and wants the fuller check, point them at the tool page and stop. That work is optional and is not part of this plan.
