@@ -245,6 +245,7 @@ script, not the SDK; the server SDK is `@dregs/sdk`.
 | `glama.json` | Maintainer metadata for the [Glama](https://glama.ai/mcp/servers) listing |
 | `chatgpt-app-submission.json` | Tool annotations, justifications, and test cases for the ChatGPT plugin directory submission |
 | `.claude-plugin/`, `.mcp.json`, `skills/` | The Claude Code plugin and its marketplace manifest |
+| `prospect-skills/` | Freestanding skills for teams with no Dregs account. `setup-abuse-prevention` plans abuse controls for a SaaS stack. |
 | `.github/workflows/` | Validation on every push, and registry publishing on release |
 
 ## Releasing a new version of the surface
