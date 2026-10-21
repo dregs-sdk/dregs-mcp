@@ -73,7 +73,7 @@ Do not put Arkose, or any challenge, on every page view.
 
 ### Runner-up: Cloudflare Turnstile
 
-Use Turnstile when they need a challenge on one form and an enterprise contract is the wrong weight. Cloudflare documents Turnstile as a CAPTCHA alternative that can be embedded on any site, including sites that do not proxy through Cloudflare, and describes the widget as free. Confirm current terms on [Turnstile's docs](https://developers.cloudflare.com/turnstile/) if they will depend on it at serious volume. Turnstile usually runs without a visual puzzle and can still show one when the signal is weak. A pass still only means "this session cleared a challenge."
+Use Turnstile when they already use Cloudflare and a light challenge on the form is enough. Cloudflare documents Turnstile as a CAPTCHA alternative that can be embedded on any site, including sites that do not proxy through Cloudflare, and describes the widget as free. Confirm current terms on [Turnstile's docs](https://developers.cloudflare.com/turnstile/) if they will depend on it at serious volume. Turnstile usually runs without a visual puzzle and can still show one when the signal is weak. A pass still only means "this session cleared a challenge."
 
 If they already run HUMAN Bot Defender, use HUMAN's Human Challenge on those routes instead of adding Turnstile or Arkose.
 
@@ -87,13 +87,17 @@ It does not answer: is this a unique person, and will they abuse the trial after
 
 ### Email, default: block known disposable domains locally
 
-For fake signups and trial abuse that show up as burner inboxes, block the domain in the signup handler. Host the list with the app and refresh it on a schedule. The community list linked from [authenticity-check.md](authenticity-check.md) is a reasonable start when they have no vendor. Keep serving the last list you successfully loaded if a refresh fails. Do not block signups because a remote call timed out, and do not put the anonymous API on the signup path.
+Start free. For fake signups and trial abuse that show up as burner inboxes, block the domain in the signup handler. Host the list with the app and refresh it on a schedule. The community list linked from [authenticity-check.md](authenticity-check.md) is a reasonable start. Keep serving the last list you successfully loaded if a refresh fails. Do not block signups because a remote call timed out, and do not put the anonymous API on the signup path.
 
 Spot-check doubtful domains with the free anonymous API, inside that file's budget. A true result is a domain to block. A false result is not a pardon.
 
-### Email, runner-up: deliverability, and only for bounces
+### Email, default vendor: Kickbox
 
-ZeroBounce, and Mailgun's email validation when they already send mail through Mailgun, check whether an inbox can receive mail. The Dregs tool page names both as deliverability products and draws the line: a real inbox at a disposable provider passes deliverability and fails a burner check. Use these when the pain is bounces and wasted sends. Skip them when the pain is abuse. Do not quote their prices. Each publishes current pricing on its own site.
+When they want a vendor check on the address at signup, Kickbox is the guide's pick. It checks deliverability and reports whether the address is disposable or a role address. Use it to skip a confirmation to an undeliverable address and to catch burners the local list missed. It does not tell you that a valid, deliverable address belongs to someone on their fourth trial. Do not quote Kickbox prices. Point at its current pricing page.
+
+### Email, runner-up: the validation API the mail vendor already sells
+
+When the vendor that already sends their mail sells the same check, use it instead of opening another account. Mailgun Email Validation is the usual example when they send through Mailgun. Confirm the current product name and what their plan includes in that vendor's docs. Do not quote prices.
 
 ### Phone, default when Twilio sends the SMS
 
@@ -109,7 +113,7 @@ Lookup packages are paid add-ons. Point at Twilio's pricing page. Do not quote i
 
 Prefer email or an authenticator app for verification when the product can stand it. The cheapest SMS is the one you do not send.
 
-### Phone, runner-up: whoever already sends the SMS
+### Phone, runner-up: the vendor that already sends the SMS
 
 If the SMS vendor is Telnyx, Vonage, Bird, or Amazon SNS, keep them. Use that vendor's number lookup and fraud controls, plus the same country allowlist and rate limit. Switching vendors is not the first move. Confirm the current product name in that vendor's docs before you put it in the plan.
 
@@ -162,9 +166,13 @@ Put the check in the smallest place that stops the loss:
 
 Prefer the smallest action that stops the money. A hold beats a silent ban when you are still unsure, because a silent ban is how you lock out a real customer and never hear why.
 
-### Runner-up: the auth vendor's signup hook
+### Runner-up: a review queue in Slack or email
 
-Use this when the account is created inside the auth vendor and your app only hears about it afterwards. Confirm the current hook name before you write code:
+Use a queue when a false positive would hit a real customer and they are not ready to enforce automatically inside the product. Send the flagged account, with the evidence, to a Slack channel or an email inbox that a named person reads, and hold the expensive thing (the trial, the credits, the payout) until that person decides. A queue nobody owns is a log. When the volume outgrows the queue, move the clear cases back to the handler.
+
+### Where the check runs when the auth vendor creates the account
+
+When the account is created inside the auth vendor and the app only hears about it afterwards, the vendor's signup hook is the handler. Confirm the current hook name before you write code:
 
 - Auth0: Pre User Registration Action. Also turn on Attack Protection (breached-password detection and bot detection) when stuffing is the complaint. Confirm the current names in Auth0's docs.
 - Cognito: pre sign-up trigger. Threat protection, on tiers that include it, is the vendor control to turn on before you add a product. Confirm in the AWS docs.

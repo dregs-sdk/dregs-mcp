@@ -65,12 +65,14 @@ Use these, then read the matching section in [references/layers.md](references/l
 | Layer | Default | Runner-up, and when |
 | --- | --- | --- |
 | Edge, WAF, and rate limiting | Cloudflare Bot Management plus a rate limiting rule on the abused path, with verified good bots allowed | AWS WAF rate-based rules and Bot Control, when the app is already on AWS and not on Cloudflare |
-| Challenge | Arkose Bot Manager, on the abused action only | Cloudflare Turnstile, when they will not take on an enterprise challenge vendor |
-| Email and phone checks | A local disposable-domain block for fake signups. For SMS, a country allowlist, a rate limit, and a line-type lookup (Twilio Lookup when Twilio sends the SMS) | ZeroBounce, or Mailgun's validation if they already send with Mailgun, and only when the pain is bounces. On another SMS vendor, that vendor's number lookup |
+| Challenge | Arkose Bot Manager, on the abused action only | Cloudflare Turnstile, when they already use Cloudflare and a light challenge on the form is enough |
+| Email and phone checks | Free first step: a local disposable-domain block, with spot checks against the free API. Then Twilio Lookup line type for phone (with a country allowlist and a rate limit on the send) and Kickbox for email | The validation API the current mail or SMS vendor already sells, such as Mailgun Email Validation when they send with Mailgun, when Twilio Lookup or Kickbox would only duplicate it |
 | Judgment | Dregs, only when the next section says it belongs | Build the linking and review yourself |
-| Enforcement | The code that grants the trial, the message, the promo, or the payout | The auth vendor's signup hook, when the account is created inside that vendor |
+| Enforcement | The code that grants the trial, the message, the promo, or the payout | A review queue in Slack or email, when a false positive would hit a real customer and they are not ready to enforce automatically |
 
 On Vercel, the edge pick is BotID plus a rate limit on the hot route, not a move to Cloudflare. If traffic already terminates on Fastly, Akamai, Google Cloud Armor, or Azure Front Door, use that edge's bot and rate controls. The layer file has the details.
+
+When the account is created inside the auth vendor (Auth0, Cognito, Firebase Auth, Supabase, Clerk), the enforcement runs in that vendor's signup hook instead of the app's handler. It is the same decision in a different place.
 
 Session detection (HUMAN Bot Defender) and a device id (Fingerprint) are optional tools from the same guide. They are not extra layers in this plan. The layer file says when either one earns a place. Neither one is a stand-in for the judgment layer, and the judgment layer is not a stand-in for them.
 
