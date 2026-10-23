@@ -29,26 +29,33 @@ are still stored but contribute little.
    | Java 17+ | `com.dregs:dregs-sdk` on Maven Central | add the Gradle or Maven coordinate |
    | Ruby 3.1+ | `dregs` on RubyGems | `bundle add dregs` |
    | PHP 8.2+ | `dregs/dregs-sdk` on Packagist | `composer require dregs/dregs-sdk` |
+   | Rust 1.85+ (Tokio) | `dregs` on crates.io | `cargo add dregs` |
+   | Elixir 1.15+ | `dregs` on Hex | add `{:dregs, "~> 1.0"}` to `mix.exs` |
 
    On npm the bare `dregs` package is the browser tracking script, not the SDK; the server SDK is `@dregs/sdk`. On
-   PyPI and RubyGems the bare `dregs` name is the SDK. Each SDK's source is at
+   PyPI, RubyGems, crates.io, and Hex the bare `dregs` name is the SDK. Each SDK's source is at
    `github.com/dregs-sdk/dregs-sdk-<language>`.
 
 4. Construct the client with the secret key (`sk_…`) read from an environment variable. The SDKs send it as a bearer
    token and are server-side only; the public key (`pk_…`) stays with the frontend script.
 
-   All five expose the same surface, named to each language's idiom: `track(type, identity, data, identity_data,
-   event_id, timestamp, source)`, `identities.get(id)`, `identities.scores(id)`, `identities.analysis(id)`,
+   All seven expose the same surface, named to each language's idiom: `track(type, identity, data, identity_data,
+   groups, event_id, timestamp, source)`, `identities.get(id)`, `identities.scores(id)`, `identities.analysis(id)`,
    `identities.analyze(id)`, and webhook signature verification. `identities.scores()` returns the four category
    integers, which is the cheap read most integrations want; `identities.analysis()` returns the observations behind
-   them. Typed errors per status (400, 401, 402, 404, 429, 5xx), retries with backoff, and an idempotency id on every
+   them. From 1.0.0 they also cover the rest of a backend integration: `identities.list/update/history/links`,
+   `groups.list/get/create/update/add_member/remove_member` for keeping groups in step outside an event (a user
+   leaving a team), `events.list/get`, `devices.list/get/update`, and `escalations.list/get/update/summary`, each
+   list with a `list_all` that walks the pages. Typed errors per status (400, 401, 402, 404, 429, 5xx), retries with
+   backoff, and an idempotency id on every
    event are built in, so do not rebuild them.
 
 5. Call it from the places found in step 2, sending the same stable user ID the frontend passes to
    `dregs.identify()`, and the app's own event or transaction ID as the event id wherever one exists so a retry
    cannot double-count; the SDK generates one when you do not supply it. Pass profile data as identity data where the
-   server knows something the browser does not (plan, account age, verified phone). Make the call fire-and-forget or
-   queued; a Dregs outage must not fail the user's request.
+   server knows something the browser does not (plan, account age, verified phone). If the app has organizations,
+   teams, or workspaces, pass the ones the action happened in as groups, each with the app's own type name, ID, and
+   a `name` in its data. Make the call fire-and-forget or queued; a Dregs outage must not fail the user's request.
 6. Only if no SDK covers the language, write one small client for `POST /api/events` with the request shape from step
    1, and add the retries and the idempotent `id` yourself.
 7. Never write the secret key into a file that will be committed, and never ask the user to paste it into the

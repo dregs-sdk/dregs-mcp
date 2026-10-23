@@ -31,6 +31,9 @@ problems, and the ring is the unit of action.
 4. **Corroborate with events and devices.** `search_events` on two or three members: registrations minutes apart,
    the same referral code, the same promo, near-identical event sequences. `list_devices` filtered to members to see
    the shared hardware and its geo context. `get_device` on the shared device shows every identity that used it.
+   `list_groups` filtered to a member shows the organizations, teams, or workspaces the app says it belongs to:
+   accounts in the same organization sharing an office IP are usually colleagues, while a ring that is also one
+   group may be a single customer padding seats or trial users.
 5. **Check for an operator.** If a member is disregarded, or the links vanish around one account, the team may have
    already marked an internal operator. A disregarded identity's devices and IPs are removed from everyone's
    analysis on purpose; do not try to route around that.
