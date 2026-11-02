@@ -47,14 +47,15 @@ endpoint URL and the events to subscribe to; the signing secret is shown once at
 - `list_channels` to find the new channel's slug and confirm it is enabled.
 - `test_channel` (admin) to send a test delivery, and `list_channel_deliveries` to see whether it was delivered or
   failed and with what status code.
-- For escalation events, the channel has to be attached to an escalation rule. `list_escalation_rules` shows the
-  rules; `update_escalation_rule` (admin, with confirmation) adds the channel slug to the ones that should notify.
-  The `tune-rules` skill covers writing new rules.
+- Subscribe the channel to the escalation events to receive all escalations, or attach it to specific escalation
+  rules (`update_escalation_rule`, admin, with confirmation) to receive only those rules' escalations.
+  `list_escalation_rules` shows the rules; `update_escalation_rule` (admin, with confirmation) adds the channel
+  slug to the ones that should notify. The `tune-rules` skill covers writing new rules.
 
 ## Verify end to end
 
 With the endpoint deployed to an environment Dregs can reach (a tunnel is fine for development), trigger a
-delivery with `test_channel`, then `analyze_identity` on a test identity to produce a real `identity.scored`
+delivery with `test_channel`, then `analyze_identity` on a test identity to produce a real `IDENTITY_SCORED`
 delivery, and confirm the app recorded or flagged as designed. Check `list_channel_deliveries` for anything
 FAILED and fix the endpoint before moving on.
 
