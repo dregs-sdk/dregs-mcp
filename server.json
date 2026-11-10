@@ -3,7 +3,7 @@
   "name": "com.dregs/dregs-mcp",
   "title": "Dregs",
   "description": "Connect once, then work scores and rules from Claude, ChatGPT, or Cursor. No dashboard tab-hopping.",
-  "version": "1.2.0",
+  "version": "1.4.0",
   "websiteUrl": "https://dregs.com/manual/ai-agents/",
   "repository": {
     "url": "https://github.com/dregs-sdk/dregs-mcp",

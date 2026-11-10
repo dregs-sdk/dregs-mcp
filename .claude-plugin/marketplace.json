@@ -12,7 +12,7 @@
       "displayName": "Dregs",
       "source": "./",
       "description": "Your abuse ops from Claude. Open a scored identity, follow its links, triage the escalation, and tune badge and escalation rules without hopping through the dashboard. Connects over OAuth: run /mcp after installing.",
-      "version": "1.2.0",
+      "version": "1.4.0",
       "author": {
         "name": "Dregs"
       },

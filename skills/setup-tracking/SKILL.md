@@ -40,6 +40,12 @@ authenticity scoring. Use the app's existing field names; the `setup-events` ski
 fields afterwards. If the app renders the logged-in user into the page on load, identify there too, so returning
 sessions are attributed without waiting for another login.
 
+If the app groups users into organizations, teams, or workspaces, call `dregs.group(type, id, data)` wherever the
+client learns which one the user is in, and again when they switch: for example
+`dregs.group('organization', org.id, {name: org.name})`. Use the app's own word for the type and its own IDs. Every
+later event carries the groups, one per type, and Dregs makes the identified user a member. Skip it for apps without
+such a concept.
+
 ## Track key actions
 
 Add `dregs.track(type, data)` for the actions that carry signal and that the browser sees: signup completion,
