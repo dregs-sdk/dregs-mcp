@@ -1,13 +1,14 @@
 # Dregs MCP
 
-[Dregs](https://dregs.com) scores a site's users for fraud and abuse: fake signups, bots, duplicate accounts,
-referral fraud, and account takeover, each explained by the observations behind the score. Its built-in
-[Model Context Protocol](https://modelcontextprotocol.io/) (MCP) server lets AI agents like Claude, ChatGPT, Codex,
-Cursor, and VS Code investigate identities, review escalations, and tune rules in your Dregs account.
+Dregs MCP is your abuse ops, from the assistant you already use. Run Dregs from Claude, ChatGPT, or Cursor:
+open a scored identity and the observations behind its scores, follow its links to related accounts and devices,
+triage the escalation, and tune the badge and escalation rules that label and flag identities, all without hopping
+through the dashboard. It uses the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP), so it also
+works with Codex, VS Code, and any other client that speaks MCP over HTTP.
 
-This repository is the public home for connecting to that server: setup snippets for each client, the Claude Code
-plugin, and the metadata behind Dregs's listings in MCP directories. The server itself is hosted by Dregs at
-`https://dregs.com/mcp`, and its source is not published here.
+This repository is the public home for connecting to the Dregs MCP server: setup snippets for each client, the
+Claude Code plugin, and the metadata behind Dregs's listings in MCP directories. The server itself is hosted by
+Dregs at `https://dregs.com/mcp`, and its source is not published here.
 
 The maintained, full-length guide is the [AI Agents chapter of the Dregs manual](https://dregs.com/manual/ai-agents/).
 This README is the short version.
