@@ -5,6 +5,18 @@
   "description": "Fraud and abuse detection for SaaS: investigate scored identities, triage escalations, tune rules.",
   "version": "1.4.0",
   "websiteUrl": "https://dregs.com/manual/ai-agents/",
+  "icons": [
+    {
+      "src": "https://dregs.com/android-chrome-512x512.png",
+      "mimeType": "image/png",
+      "sizes": ["512x512"]
+    },
+    {
+      "src": "https://dregs.com/apple-touch-icon.png",
+      "mimeType": "image/png",
+      "sizes": ["180x180"]
+    }
+  ],
   "repository": {
     "url": "https://github.com/dregs-sdk/dregs-mcp",
     "source": "github"
